@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Records Processor</title>
+</head>
+
+<body>
+    <h1>Employee Records Processor</h1>
+    <form id="file-form">
+        <label for="file">Upload Employee Records File:</label>
+        <input type="file" id="file" accept=".csv, .txt" required>
+        <button type="submit">Process Records</button>
+    </form>
+
+    <h2>Results:</h2>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('file-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var fileInput = document.getElementById('file');
+            var file = fileInput.files[0];
+
+            if (file) {
+              processFile()
+
+            } else {
+                alert('Please select a file.');
+            }
+        });
+
+        function processFile() {
+            var fileInput = document.getElementById('file');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var content = event.target.result;
+                var records = content.split('\n');
+
+                var results = [];
+                for (var i = 0; i < records.length; i++) {
+                    var record = records[i].trim().split(',');
+                    var name = record[0];
+                    var position = record[1];
+                    var hoursWorked = parseFloat(record[2]);
+
+                    // Check conditions and add to results
+                    if (hoursWorked >= 7) {
+                        results.push(`Name: ${name}, Position: ${position} - Worked for 7 or more days.`);
+                    }
+
+                    // Assuming the records are sorted by date/time
+                    // Check for less than 10 hours between shifts but greater than 1 hour
+                    if (i > 0) {
+                        var prevRecord = records[i - 1].trim().split(',');
+                        var prevHoursWorked = parseFloat(prevRecord[2]);
+                        var timeDifference = hoursWorked - prevHoursWorked;
+
+                        if (timeDifference < 10 && timeDifference > 1) {
+                            results.push(`Name: ${name}, Position: ${position} - Less than 10 hours between shifts but greater than 1 hour.`);
+                        }
+                    }
+
+                    // Check for more than 14 hours in a single shift
+                    if (hoursWorked > 14) {
+                        results.push(`Name: ${name}, Position: ${position} - Worked for more than 14 hours in a single shift.`);
+                    }
+                }
+
+                // Display results
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = results.join('<br>');
+            };
+
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+
+</html>
